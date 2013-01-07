@@ -65,7 +65,6 @@
      */
     var dasherize = function (str) {
         var prop = str.replace(/([a-z\d])([A-Z])/g, '$1-$2').toLowerCase();
-        //return vendorsLowerCase.indexOf( prop.split('-')[0] ) !== -1 ? '-' + prop : prop;
         return $.inArray(prop.split('-')[0], vendorsLowerCase) !== -1 ? '-' + prop : prop;
     };
 
@@ -79,6 +78,7 @@
      */
     var getPrefixGradient = function (vendor, type, direction, values) {
 
+        // parse direction
         if (type === 'linear') {
             direction = (direction === 'to bottom') ? 'top' : 'left';
         } else {
@@ -97,6 +97,7 @@
      */
     var getOldWebkitGradient = function (type, direction, values) {
 
+        // parse direction
         if (type === 'linear') {
             direction = (direction === 'to bottom') ? 'left top, left bottom' : 'left top, right top';
         } else {
@@ -110,6 +111,7 @@
             stop = $.trim(values[i]).split(' ');
             colorStops.push('color-stop(' + stop[1] + ',' + stop[0] + ')');
         }
+
         return '-webkit-gradient(' + type + ', ' + direction + ', ' + colorStops.join(',') + ')';
     };
 
@@ -264,7 +266,8 @@
 
     };
 
-    // alias get property for global use.
-    $.getSupportedStyle = getProperty;
+    // add a getProp() method to $.css (Zepto doesn't have this so create it)
+    $.css = $.css || {};
+    $.css.getProp = getProperty;
 
 })();
