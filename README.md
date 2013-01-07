@@ -1,4 +1,4 @@
-## CSS Prefixes
+## CSS Prefixes for jQuery's or Zepto's .css() method
 
 Overrides the $.fn.css method of jQuery or Zepto so that prefixes are added to properties and values where necessary.
 
