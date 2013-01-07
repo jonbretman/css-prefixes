@@ -221,10 +221,12 @@
             return getProperty('perspective') !== '' ? value : value.replace('translate3d(', 'translate(').replace(/(.*?,.*?)(,.*)/, '$1)');
         }
 
+        // check linear gradient syntax
         if (property === 'background-image' && value.indexOf('linear-gradient(') !== -1) {
             return getSupportedGradient('linear', value);
         }
 
+        // check radial gradient syntax
         if (property === 'background-image' && value.indexOf('radial-gradient(') !== -1) {
             return getSupportedGradient('radial', value);
         }
@@ -241,23 +243,24 @@
      */
     $.fn.css = function (prop, value) {
 
-        var args = Array.prototype.slice.call(arguments);
-
         if (typeof prop === 'string') {
+
+            // getting a value
             if (arguments.length === 1) {
                 return _super.call(this, getProperty(prop));
             }
-            var temp = {};
-            temp[prop] = value;
-            prop = temp;
+
+            // setting a single value
+            return _super.call(this, getProperty(prop), getValue(prop, value));
+
         }
 
-        var propMap = {};
+        // setting multiple with a map of properties and values
         for (var key in prop) {
-            propMap[ getProperty(key) ] = getValue(key, prop[key]);
+            prop[ getProperty(key) ] = getValue(key, prop[key]);
         }
 
-        return _super.call(this, propMap);
+        return _super.call(this, prop);
 
     };
 
