@@ -75,13 +75,19 @@
      * @param values
      * @return {String}
      */
-    var getPrefixGradient = function (vendor, direction, values) {
+    var getPrefixGradient = function (vendor, type, direction, values) {
+
         if (direction === 'to bottom') {
             direction = 'top';
         } else if (direction === 'to right') {
             direction = 'left';
+        } else if (type === 'radial' && direction.indexOf('ellipse') !== -1) {
+            direction = 'center, ellipse cover';
+        } else if (type === 'radial' && direction.indexOf('circle') !== -1) {
+            direction = 'center, circle cover'
         }
-        return '-' + vendor + '-linear-gradient(' + direction + ',' + values + ')';
+
+        return '-' + vendor + '-' + type + '-gradient(' + direction + ',' + values + ')';
     };
 
     /**
@@ -90,12 +96,16 @@
      * @param values
      * @return {String}
      */
-    var getOldWebkitGradient = function (direction, values) {
+    var getOldWebkitGradient = function (type, direction, values) {
+
         if (direction === 'to bottom') {
             direction = 'left top, left bottom';
         } else if (direction === 'to right') {
             direction = 'left top, right top';
+        } else if (type === 'radial') {
+            direction = 'center center, 0px, center center, 100%';
         }
+
         var colorStops = [];
         var stop;
         values = values.split(',');
@@ -103,7 +113,7 @@
             stop = values[i].trim().split(' ');
             colorStops.push('color-stop(' + stop[1] + ',' + stop[0] + ')');
         }
-        return '-webkit-gradient(linear, ' + direction + ', ' + colorStops.join(',') + ')';
+        return '-webkit-gradient(' + type + ', ' + direction + ', ' + colorStops.join(',') + ')';
     };
 
     /**
@@ -122,7 +132,7 @@
      * @param value A gradient value in W3C style syntax.
      * @return {String}
      */
-    var getSupportedGradient = function (value) {
+    var getSupportedGradient = function (type, value) {
 
         // standard
         if (testGradient(value)) {
@@ -134,19 +144,19 @@
         var values = match[2];
 
         // webkit
-        var webkit = getPrefixGradient('webkit', direction, values);
+        var webkit = getPrefixGradient('webkit', type, direction, values);
         if (testGradient(webkit)) {
             return webkit;
         }
 
         // moz
-        var moz = getPrefixGradient('moz', direction, values);
+        var moz = getPrefixGradient('moz', type, direction, values);
         if (testGradient(moz)) {
             return moz;
         }
 
         // old webkit
-        var oldWebkit = getOldWebkitGradient(direction, values)
+        var oldWebkit = getOldWebkitGradient(type, direction, values);
         if (testGradient(oldWebkit)) {
             return oldWebkit;
         }
@@ -228,7 +238,11 @@
         }
 
         if (property === 'background-image' && value.indexOf('linear-gradient(') !== -1) {
-            return getSupportedGradient(value);
+            return getSupportedGradient('linear', value);
+        }
+
+        if (property === 'background-image' && value.indexOf('radial-gradient(') !== -1) {
+            return getSupportedGradient('radial', value);
         }
 
         return value;
