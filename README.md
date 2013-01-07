@@ -2,8 +2,7 @@
 
 Overrides the $.fn.css method of jQuery or Zepto so that prefixes are added to properties and values where necessary.
 
-### Examples
-
+### Setting
 ```javascript
 // will use the correct property eg. transform, -webkit-transform, -moz-transform etc..
 // will check that translate3d is supported, if it isn't then it will be converted to translate(0,0)
@@ -15,6 +14,20 @@ $('#element').css('display', 'box');
 // will use the correct property eg. transition-property, -webkit-transition-property, -moz-transition-property etc..
 // will use the correct value eg. transform, -webkit-transform, -moz-transform
 $('#element').css('transition-property', 'transform');
+
+// also works with the property map syntax
+$('#element').css({
+    'display': 'box',
+    'transform': 'translate3d(0,0,0) rotate(45deg)',
+    'transition': 'transform 250ms ease',
+    'background-image': 'linear-gradient(to bottom, #efefef 0%, #d3d3d3) 100%'
+});
+```
+
+### Getting
+```javascript
+// will get the value of either transform, -webkit-transform, -moz-transform etc...
+$('#element').css('transform');
 ```
 
 ### Gradients
@@ -32,4 +45,4 @@ $('#element').css('background-image', 'radial-gradient(circle at center, #efefef
 ```
 
 ### $.css.getProp
-This will just return the correct property to use in CSS style syntax. For example `$.css.getProp('transition')` may return `transition`, `-webkit-transition`, `-moz-transition` etc...
+This will return the correct property to use in CSS style syntax. For example `$.css.getProp('transition')` may return `transition`, `-webkit-transition`, `-moz-transition` etc...
