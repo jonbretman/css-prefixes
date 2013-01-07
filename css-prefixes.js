@@ -1,5 +1,6 @@
 /**
- * Override of the $.fn.css method that adds the vendor prefixes to CSS properties.
+ * @fileOverview Override of the $.fn.css method that adds the vendor prefixes to CSS properties.
+ * @author Jon Bretman jon.bretman@corp.badoo.com
  */
 
 (function () {
@@ -78,14 +79,10 @@
      */
     var getPrefixGradient = function (vendor, type, direction, values) {
 
-        if (direction === 'to bottom') {
-            direction = 'top';
-        } else if (direction === 'to right') {
-            direction = 'left';
-        } else if (type === 'radial' && direction.indexOf('ellipse') !== -1) {
-            direction = 'center, ellipse cover';
-        } else if (type === 'radial' && direction.indexOf('circle') !== -1) {
-            direction = 'center, circle cover'
+        if (type === 'linear') {
+            direction = (direction === 'to bottom') ? 'top' : 'left';
+        } else {
+            direction = (direction.indexOf('ellipse') !== -1) ? 'center, ellispe cover' : 'center, circle cover';
         }
 
         return '-' + vendor + '-' + type + '-gradient(' + direction + ',' + values + ')';
@@ -100,11 +97,9 @@
      */
     var getOldWebkitGradient = function (type, direction, values) {
 
-        if (direction === 'to bottom') {
-            direction = 'left top, left bottom';
-        } else if (direction === 'to right') {
-            direction = 'left top, right top';
-        } else if (type === 'radial') {
+        if (type === 'linear') {
+            direction = (direction === 'to bottom') ? 'left top, left bottom' : 'left top, right top';
+        } else {
             direction = 'center center, 0px, center center, 100%';
         }
 
@@ -143,8 +138,13 @@
 
         // parse gradient for direction and values
         var match = value.match(/.*?\(([a-z ]+?),(.+?)\)/);
-        var direction = match[1];
-        var values = match[2];
+
+        if (!match || match.length < 3) {
+            return value;
+        }
+
+        var direction = match[1].trim();
+        var values = match[2].trim();
         var prefixed, i;
 
         // test prefixed
@@ -199,12 +199,6 @@
     };
 
     /**
-     * The correct value to use for 'display: box;'
-     * @type {String}
-     */
-    var displayBoxValue = null;
-
-    /**
      * Returns the correct value to use.
      * @param property The CSS property
      * @param value The correct CSS value to use
@@ -214,27 +208,7 @@
 
         // use correct value for 'display: box;'
         if (property === 'display' && value === 'box') {
-
-            // see if value is in cache
-            if (displayBoxValue) {
-                return displayBoxValue;
-            }
-
-            // find supported value
-            var displayBox, d;
-            for (var i = 0; i < vendorsLowerCase.length; i++) {
-
-                d = document.createElement('div');
-                displayBox = '-' + vendorsLowerCase[i] + '-box';
-                d.style.display = displayBox;
-
-                // if correct than cache result and return
-                if (d.style.display === displayBox) {
-                    displayBoxValue = displayBox;
-                    return displayBoxValue;
-                }
-
-            }
+            return getProperty('box-flex').replace('-flex', '');
         }
 
         // use correct value for 'transition: transform 250ms ease;' or 'transition-property: transform;'
