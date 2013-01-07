@@ -107,7 +107,7 @@
         var stop;
         values = values.split(',');
         for (var i = 0; i < values.length; i++) {
-            stop = values[i].trim().split(' ');
+            stop = $.trim(values[i]).split(' ');
             colorStops.push('color-stop(' + stop[1] + ',' + stop[0] + ')');
         }
         return '-webkit-gradient(' + type + ', ' + direction + ', ' + colorStops.join(',') + ')';
@@ -143,8 +143,8 @@
             return value;
         }
 
-        var direction = match[1].trim();
-        var values = match[2].trim();
+        var direction = $.trim(match[1]);
+        var values = $.trim(match[2]);
         var prefixed, i;
 
         // test prefixed
