@@ -71,6 +71,7 @@
     /**
      * Generates a prefixed version of a the gradient syntax.
      * @param vendor
+     * @parma type
      * @param direction
      * @param values
      * @return {String}
@@ -92,6 +93,7 @@
 
     /**
      * Generates the legacy webkit gradient syntax
+     * @param type
      * @param direction
      * @param values
      * @return {String}
@@ -124,7 +126,7 @@
     var testGradient = function (value) {
         var d = document.createElement('div');
         d.style.background = value;
-        return d.style.background !== '';
+        return d.style.background.indexOf('gradient') !== -1;
     };
 
     /**
@@ -134,28 +136,26 @@
      */
     var getSupportedGradient = function (type, value) {
 
-        // standard
+        // test standard
         if (testGradient(value)) {
             return value;
         }
 
+        // parse gradient for direction and values
         var match = value.match(/.*?\(([a-z ]+?),(.+?)\)/);
         var direction = match[1];
         var values = match[2];
+        var prefixed, i;
 
-        // webkit
-        var webkit = getPrefixGradient('webkit', type, direction, values);
-        if (testGradient(webkit)) {
-            return webkit;
+        // test prefixed
+        for (i = 0; i < vendorsLowerCase.length; i++) {
+            prefixed = getPrefixGradient(vendorsLowerCase[i], type, direction, values);
+            if (testGradient(prefixed)) {
+                return prefixed;
+            }
         }
 
-        // moz
-        var moz = getPrefixGradient('moz', type, direction, values);
-        if (testGradient(moz)) {
-            return moz;
-        }
-
-        // old webkit
+        // legacy webkit
         var oldWebkit = getOldWebkitGradient(type, direction, values);
         if (testGradient(oldWebkit)) {
             return oldWebkit;
@@ -199,7 +199,13 @@
     };
 
     /**
-     * Returns the correct value to use. For example with 'display: box;' may return '-webkit-box' or '-moz-box';
+     * The correct value to use for 'display: box;'
+     * @type {String}
+     */
+    var displayBoxValue = null;
+
+    /**
+     * Returns the correct value to use.
      * @param property The CSS property
      * @param value The correct CSS value to use
      * @return {String}
@@ -208,12 +214,26 @@
 
         // use correct value for 'display: box;'
         if (property === 'display' && value === 'box') {
+
+            // see if value is in cache
+            if (displayBoxValue) {
+                return displayBoxValue;
+            }
+
+            // find supported value
+            var displayBox, d;
             for (var i = 0; i < vendorsLowerCase.length; i++) {
-                var d = document.createElement('div');
-                d.style.display = '-' + vendorsLowerCase[i] + '-box';
-                if (d.style.display === '-' + vendorsLowerCase[i] + '-box') {
-                    return '-' + vendorsLowerCase[i] + '-box';
+
+                d = document.createElement('div');
+                displayBox = '-' + vendorsLowerCase[i] + '-box';
+                d.style.display = displayBox;
+
+                // if correct than cache result and return
+                if (d.style.display === displayBox) {
+                    displayBoxValue = displayBox;
+                    return displayBoxValue;
                 }
+
             }
         }
 
@@ -223,18 +243,8 @@
         }
 
         // check translate vs. translate3d support
-        if (property === 'transform') {
-
-            // if using translate3d check it is supported
-            if (value.indexOf('translate3d(') !== -1) {
-                return getProperty('perspective') !== '' ? value : value.replace('translate3d(', 'translate(').replace(/(.*?,.*?)(,.*)/, '$1)');
-            }
-
-            // if using translate see if we can 'upgrade' to translate3d
-            if (value.indexOf('translate(') !== -1) {
-                return getProperty('perspective') === '' ? value : value.replace('translate(', 'translate3d(').replace(')', ',0px)');
-            }
-
+        if (property === 'transform' && value.indexOf('translate3d(') !== -1) {
+            return getProperty('perspective') !== '' ? value : value.replace('translate3d(', 'translate(').replace(/(.*?,.*?)(,.*)/, '$1)');
         }
 
         if (property === 'background-image' && value.indexOf('linear-gradient(') !== -1) {
