@@ -11,7 +11,7 @@
     // list of vendors in lower case
     var vendorsLowerCase = $.map(vendors, function (vendor) {
         return vendor.toLowerCase();
-    });
+    }).get(0);
 
     /**
      * Gets the supported property in DOM syntax. eg passing in 'transition-property' may return 'WebkitTransitionProperty'
